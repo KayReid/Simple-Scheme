@@ -1,0 +1,109 @@
+#lang racket
+
+; Kayleigh Reid
+
+; binary search tree, basically just a (list root left right) stacked up 
+
+; helper functions
+(define (root t) (first t)) ; car
+
+(define (left t) ((compose first rest) t)) ; cadr or second
+
+(define (right t) ((compose first rest rest) t)) ; caddr or third
+
+(define (leaf? t) (and (null? (left t)) (null? (right t)))) 
+
+; insert,to insert a node into a binary search tree
+; v is a value to be inserted (should not be a duplicate)
+; t is a binary search tree
+(define (insert v t)
+  (cond [(null? t) (list v null null)] ; make root
+        [(< v (root t)) (list (root t) (insert v (left t)) (right t))] ; insert into left
+        [else (list (root t) (left t) (insert v (right t)))]) ; insert into right
+)
+
+; makes a list of 0-99
+(define lst (shuffle (for/list ([i 100]) i)))
+
+; example of a bst with list from above
+(define bst-ex (foldr insert null lst))
+
+; takes a bt
+; returns the height of a t
+; recursive function that follow the recursive structure of a tree
+(define (height t)
+  (if (null? t)
+      -1
+      (+ 1 (max (height (left t)) (height (right t))))
+   )
+)
+
+; t must be a bt
+; returns a preorder traversal in a list
+; this has a terrible big 0 because of the append
+(define (preorder-badO t)
+  (if (null? t)
+      null
+      (append (list (root t)) (preorder (left t)) (preorder (right t)))
+    )
+)
+
+; t must be a bt
+; returns a preorder traversal in a list
+(define (preorder t)
+  (define (preorder-inner t acc)
+    (if (null? t)
+      acc
+      (cons (root t) (preorder-inner (left t) (preorder-inner (right t) acc)))
+     )
+   )
+  (preorder-inner t null)
+)
+
+; t must be a bst
+; returns the min value
+(define (find-min t)
+  (if (null? (left t))
+      (root t)
+      (find-min (left t)))
+)
+
+; t must be a bst
+; deletes the root of a bst
+(define (delete-root t)
+  (cond [((leaf? t) null)]
+        [((null? (left t)) (right t))]
+        [((null? (right t)) (left t))]
+        [else
+           (list (find-min (right t))
+                 (left t)
+                 (delete (find-min (right t)) (right t)))]
+     )
+)
+
+; t must be a bst
+; deletes the value from t
+(define (delete v t)
+  (cond
+    [(< v (root t) (list (root t) (delete v (left t)) (right t)))]
+    [(> v (root t) (list (root t) (left t) (delete v (right t))))]
+    [else (delete-root v t)]
+   )
+)
+
+; t must be a bt
+; returns the leaf count of t
+(define (count-leaves t)
+  (if (leaf? t)
+      1
+      (if (null? (left t))
+          (count-leaves (right t))
+          (if (null? (right t))
+          (count-leaves (left t))
+          (+ (count-leaves (left t)) (count-leaves (right t)))))
+     )
+ ) 
+
+
+
+   

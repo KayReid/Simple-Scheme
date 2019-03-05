@@ -1,0 +1,44 @@
+#lang racket
+
+; this is a fully parenthisized expression where the items inside are just symbols
+; example of an expression that can be evalutated
+(define expr '((1 + 2) * (3 - 4)))
+
+; the operation 
+(define (op expr)
+  (first (rest expr))
+)
+
+; lest side of the expression tree
+(define (left expr)
+  (first expr)
+)
+
+; first of the right of the expression tree
+(define (right expr)
+  (first (rest (rest expr)))
+)
+
+; turn the symbol op into its corresponding function
+(define (lookup op)
+  (cond ((equal? op '+) +)
+        ((equal? op '-) -)
+        ((equal? op '*) *)
+        ((equal? op '/) /)
+   )
+)
+
+(define (evaluate expr)
+  (cond [(number? expr) expr]
+        [else
+         ((lookup (op expr)) (evaluate (left expr)) (evaluate (right expr)))]
+   )
+)
+
+; evaluates an expression in a preorder traversal 
+(define (preorder expr)
+  (if (number? expr)
+      expr
+      (append (list (op expr)) (list (preorder (left expr))) (list (preorder (right expr))))
+    )
+)
